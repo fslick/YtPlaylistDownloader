@@ -16,10 +16,10 @@ let sanitizeFilename (filename: string) =
 let downloadVideo (video: Video) = async {
     let! streamInfoSet = client.GetVideoMediaStreamInfosAsync video.Id |> Async.AwaitTask
     let streamInfo = streamInfoSet.Audio.WithHighestBitrate()
-    let filename = video.Title |> sanitizeFilename
-    // do! client.DownloadMediaStreamAsync(streamInfo, filename) |> Async.AwaitTask
-    let random = System.Random()
-    do! random.Next(500, 5000) |> System.Threading.Tasks.Task.Delay |> Async.AwaitTask
+    let filename = sprintf "%s - %s.%s" (video.Title |> sanitizeFilename) video.Author (streamInfo.Container.GetFileExtension())
+    do! client.DownloadMediaStreamAsync(streamInfo, filename) |> Async.AwaitTask
+    //let random = System.Random()
+    //do! random.Next(500, 5000) |> System.Threading.Tasks.Task.Delay |> Async.AwaitTask
     filename |> Console.WriteLine
 }
 
@@ -29,5 +29,3 @@ let playlist =
     playlistId
     |> getPlaylist
     |> Async.RunSynchronously
-
-printfn "Hello World from F#!"
