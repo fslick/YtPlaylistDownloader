@@ -30,17 +30,15 @@ let downloadVideo path (video: Video) =
             //do! random.Next(500, 5000) |> System.Threading.Tasks.Task.Delay |> Async.AwaitTask
         else 
             sprintf "%s exists, skipped" filename |> log
-            
     }
 
-let runWithLogging (id: string) (func: Async<unit>) = 
+let runWithLogging (id: string, func: Async<unit>) = 
     async {
         sprintf "%s started" id |> log
         let sw = Stopwatch.StartNew()
         do! func
         sw.Stop()
         sprintf "%s finished (%d ms)" id sw.ElapsedMilliseconds |> log
-
     }
 
 let shuffle seq =
@@ -65,7 +63,7 @@ let task =
     |> getVideos
     |> shuffle
     |> Seq.map(fun v -> (v.Title, downloadVideo playlist.Title v))
-    |> Seq.map(fun t -> runWithLogging (fst t) (snd t))
+    |> Seq.map(fun t -> runWithLogging t)
     |> Async.Parallel
 
 task |> Async.RunSynchronously |> ignore
