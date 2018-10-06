@@ -9,7 +9,7 @@
             "type": "coreclr",
             "request": "launch",
             "preLaunchTask": "build",
-            "program": "${workspaceFolder}/bin/Debug/netcoreapp2.1/PlaylistDownloader.Fs.dll",
+            "program": "${workspaceFolder}/bin/Debug/netcoreapp2.1/YtPlaylistDownloader.Fs.dll",
             "args": [],
             "cwd": "${workspaceFolder}",
             "console": "internalConsole",

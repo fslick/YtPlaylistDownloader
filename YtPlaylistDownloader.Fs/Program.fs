@@ -15,13 +15,27 @@ let sanitizeFilename (filename: string) =
     let invalids = System.IO.Path.GetInvalidFileNameChars()
     String.Join("_", filename.Split(invalids, StringSplitOptions.RemoveEmptyEntries)).TrimEnd('.')
 
-let log (text: string) = sprintf "%s >> %s" (DateTime.Now.ToString("HH:mm:ss.fff")) text |> Console.WriteLine 
+let log (text: string) = sprintf "%s >> %s" (DateTime.Now.ToString("HH:mm:ss.fff")) text |> Console.WriteLine
 
 let downloadVideo path (video: Video) = 
+    let retrieveAudioStreamInfo (streamInfoSet: MediaStreamInfoSet) =
+        let audio = 
+            streamInfoSet.Audio 
+            |> Seq.filter (fun a -> a.Container.GetFileExtension().ToLower() = "m4a")
+            |> Seq.sortByDescending (fun a -> a.Bitrate)
+            |> Seq.tryHead
+        match audio with
+        | Some si -> si
+        | None -> streamInfoSet.Audio.WithHighestBitrate()
+
+    let sanitizeFilename (filename: string) = 
+        let invalids = System.IO.Path.GetInvalidFileNameChars()
+        String.Join("_", filename.Split(invalids, StringSplitOptions.RemoveEmptyEntries)).TrimEnd('.')
+
     async {
         if Directory.Exists path |> not then path |> Directory.CreateDirectory |> ignore else
         let! streamInfoSet = client.GetVideoMediaStreamInfosAsync video.Id |> Async.AwaitTask
-        let streamInfo = streamInfoSet.Audio.WithHighestBitrate()
+        let streamInfo = streamInfoSet |> retrieveAudioStreamInfo
         let filename = sprintf "%s - %s.%s" (video.Title |> sanitizeFilename) video.Author (streamInfo.Container.GetFileExtension())
         let filepath = sprintf "%s\%s" path filename
         if File.Exists filepath |> not then
