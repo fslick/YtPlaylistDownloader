@@ -36,16 +36,18 @@ let downloadVideoFromPlaylist (playlist: Types.Playlist) (video: Types.Video) =
     async {
         let path = playlist.Title
         if Directory.Exists path |> not then path |> Directory.CreateDirectory |> ignore
+        
         let! streamInfoSet = client.GetVideoMediaStreamInfosAsync video.Id |> Async.AwaitTask
         let streamInfo = streamInfoSet |> retrieveAudioStreamInfo
-        let filename = sprintf "%s - %s.%s" (video.Title |> sanitizeFilename) video.Author (streamInfo.Container.GetFileExtension())
-        let filepath = sprintf "%s\%s" path filename
-        if File.Exists filepath |> not then
-            do! client.DownloadMediaStreamAsync(streamInfo, filepath) |> Async.AwaitTask
+        let fileName = sprintf "%s - %s.%s" (video.Title |> sanitizeFilename) video.Author (streamInfo.Container.GetFileExtension())
+        let filePath = Path.Combine(path, fileName)
+        if File.Exists filePath |> not then
+            do! client.DownloadMediaStreamAsync(streamInfo, filePath) |> Async.AwaitTask
+        
         return {
             Video = video
-            FileName = filename
-            FilePath = filepath
+            FileName = fileName
+            FilePath = filePath
             Playlist = Some playlist
         }
     }
