@@ -5,16 +5,6 @@ open Tagger
 
 let log (text: string) = sprintf "%s >> %s" (DateTime.Now.ToString("HH:mm:ss.fff")) text |> Console.WriteLine
 
-let runWithLogging (id: string, func: Async<'a>) =
-    async {
-        sprintf "%s started" id |> log
-        let sw = Stopwatch.StartNew()
-        let! result = func
-        sw.Stop()
-        sprintf "%s finished (%d ms)" id sw.ElapsedMilliseconds |> log
-        return result
-    }
-
 let shuffle seq =
     let array = seq |> Seq.toArray
     let random = Random()
@@ -24,6 +14,18 @@ let shuffle seq =
         array.[i] <- array.[j]
         array.[j] <- pom
     array |> Array.toSeq
+
+type AsyncTask<'a> = { Id: string; Func: Async<'a>}
+
+let runWithLogging task =
+    async {
+        sprintf "%s started" task.Id |> log
+        let sw = Stopwatch.StartNew()
+        let! result = task.Func
+        sw.Stop()
+        sprintf "%s finished (%d ms)" task.Id sw.ElapsedMilliseconds |> log
+        return result
+    }
 
 let playlistId = ""
 
@@ -35,11 +37,17 @@ let playlist =
 let task =
     playlist.Videos
     |> shuffle
-    |> Seq.map(fun v -> (v.Title, downloadVideoFromPlaylist playlist v))
-    |> Seq.map(fun t -> runWithLogging t)
+    |> Seq.map(fun v -> 
+        let func = 
+            async {
+                let! metadata = downloadVideoFromPlaylist playlist v
+                metadata |> applyTags
+                return metadata 
+            }
+        { Id = v.Title; Func = func })
+    |> Seq.map runWithLogging
     |> Async.Parallel
     |> Async.RunSynchronously
-    |> Seq.iter applyTags
 
 "done" |> log
 Console.ReadKey() |> ignore
