@@ -1,6 +1,7 @@
 ﻿open System
 open System.Diagnostics
 open Downloader
+open Tagger
 
 let log (text: string) = sprintf "%s >> %s" (DateTime.Now.ToString("HH:mm:ss.fff")) text |> Console.WriteLine
 
@@ -37,8 +38,8 @@ let task =
     |> Seq.map(fun v -> (v.Title, downloadVideoFromPlaylist playlist v))
     |> Seq.map(fun t -> runWithLogging t)
     |> Async.Parallel
-
-task |> Async.RunSynchronously |> ignore
+    |> Async.RunSynchronously
+    |> Seq.iter applyTags
 
 "done" |> log
 Console.ReadKey() |> ignore

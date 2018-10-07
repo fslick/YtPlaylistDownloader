@@ -14,7 +14,12 @@ let getPlaylist playlistId =
         return {
             Id = p.Id
             Title = p.Title
-            Videos = p.Videos |> Seq.map(fun v -> { Id = v.Id; Title = v.Title; Author = v.Author })
+            Videos = p.Videos |> Seq.map(fun v -> { 
+                Id = v.Id
+                Title = v.Title
+                Author = v.Author
+                UploadDate = v.UploadDate
+            })
         }
     }
 

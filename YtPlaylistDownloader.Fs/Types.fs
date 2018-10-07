@@ -1,9 +1,12 @@
 ﻿module Types
 
+open System
+
 type Video = {
     Id: string
     Title: string
     Author: string
+    UploadDate: DateTimeOffset
 }
 
 type Playlist = {

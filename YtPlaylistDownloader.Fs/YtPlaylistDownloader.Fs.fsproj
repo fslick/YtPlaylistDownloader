@@ -8,6 +8,7 @@
   <ItemGroup>
     <Compile Include="Types.fs" />
     <Compile Include="Downloader.fs" />
+    <Compile Include="Tagger.fs" />
     <Compile Include="Main.fs" />
   </ItemGroup>
 
